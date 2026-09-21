@@ -159,20 +159,34 @@ minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 e
 - `difok=7` - the password must contain at least 7 different chars from the last password used.
 - `enforce_for_root` - apply these rules for root too.
 
-## Script
+## Script - `monitoring.sh`
 - `uname -a` - shows architecture info (Linux, Debian, etc).
 - `grep processor /proc/cpuinfo | wc -l` - shows the number of cores used.
 - `free --mega | awk '$1 == "Mem:" {print $3}'` - shows the number mb of used memory.
 - `free --mega | awk '$1 == "Mem:" {print $2}'` - shows the total mb memory.
 - `free --mega | awk '$1 == "Mem:" {printf("(%.2f%%)\n", $3/$2*100)}'` - shows the percentage of used memory.
+- `df -m | grep "/dev/" | grep -v "/boot" | awk '{use += $3} {total += $2} END {printf("(%d%%)\n"), use/total*100}'` - to get the number of occupied disk memory.
+- `vmstat 1 4 | tail -1 | awk '{print $15}'` - for CPU usage.
+- `who -b | awk '$1 == "system" {print $3 " " $4}'` - to get the date/time of the last reboot.
+- `if [ $(lsblk | grep "lvm" | wc -l) -gt 0 ]; then echo yes; else echo no; fi` - is the LVM active or not.
+- `ss -ta | grep ESTAB | wc -l` - for the number of TCP connections.
+- `users | wc -w` - for the number of users.
+- `ip link | grep "link/ether" | awk '{print $2}'` - to get the MAC address.
+- `journalctl _COMM=sudo | grep COMMAND | wc -l` - the number of executed commands with sudo.
 
+## Crontab
+Crontab is a backgroud process manager.
+**Configuration:**
+1. Edit the crontab file:
+```
+sudo crontab -u root -e
+```
+2. In the file, add this command so that the `monitoring.sh` file executes every 10 minutes:
+```
+*/10 * * * * sh /path_to_file.sh
+```
 
-
-
-
-
-
-
+## Create `signature.txt`
 
 
 
