@@ -160,6 +160,14 @@ minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 e
 - `enforce_for_root` - apply these rules for root too.
 
 ## Script - `monitoring.sh`
+1. Edit the file `monitoring.sh`:
+```
+sudo nano /usr/local/bin/monitoring.sh
+sudo chmod +x /usr/local/bin/monitoring.sh
+sudo /usr/local/bin/monitoring.sh
+```
+2. Write the commands: [monitoring.sh](monitoring.sh)
+
 - `uname -a` - shows architecture info (Linux, Debian, etc).
 - `grep processor /proc/cpuinfo | wc -l` - shows the number of cores used.
 - `free --mega | awk '$1 == "Mem:" {print $3}'` - shows the number mb of used memory.
