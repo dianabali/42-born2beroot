@@ -11,8 +11,8 @@ cpuv=$(grep "processor" /proc/cpuinfo | wc -l)
 # RAM - see memorry info
 # free - display info about RAM
 # --mega - show the output in megabytes
-ram_total=$(free --mega | awk '$1 == "Mem:" {print $2}')
-ram_use=$(free --mega | awk '$1 == "Mem:" {print $3}')
+ram_total=free -m | grep Mem | awk '{print $2}'
+ram_use==free -m | grep Mem | awk '{print $3}'
 ram_percent=$(free --mega | awk '$1 == "Mem:" {printf("%.2f"), $3/$2*100}')
 
 # Disk memory - view the used/available memory of the disk
