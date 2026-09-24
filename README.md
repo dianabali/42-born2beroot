@@ -87,7 +87,7 @@ sudo service ssh status  # verify
 
 ## How to install UFW
 1. Install the UFW package:
-``bash
+```bash
 sudo apt install ufw
 ```
 2. Enable the firewall:
