@@ -201,7 +201,16 @@ sudo crontab -u root -e
 ```
 
 ## Create `signature.txt`
-
+**Use the terminal**
+1. Go to where you saved the `.vdi` file.
+```
+cd sgoinfre/b2br
+```
+2. Run this command:
+```
+shasum file.vdi
+```
+3. Save the signature in `signature.txt`. Do not reopen the machine after this because the signature will change.
 
 
 
