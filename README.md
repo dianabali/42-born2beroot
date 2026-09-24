@@ -45,6 +45,12 @@ sudo adduser dbali sudo
 getent group sudo user42
 ```
 
+### Print how many groups a user created
+```
+getent group | awk -F: '$3 > 1000 && $3 <= 10000 {print $1}' | wc -l
+```
+
+
 ## How to install/configure SSH
 ### Install
 1. Update the system
