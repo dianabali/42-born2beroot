@@ -175,28 +175,33 @@ AI output was verified against official documentation before being applied.
 
 `sudo hostnamectl set-hostname <user>` - change hostname.
 
+`sudo --version` - check if sudo is installed.
 
+`sudo adduser <login> <group>` - add a user to a group.
 
+`ls -ld /var/log/sudo` - check that /var/log/sudo exists.
 
+`sudo ls -la /var/log/sudo` - check the contents of /var/log/sudo.
 
+`sudo journalctl -t sudo` - check sudo logs.
 
+`sudo ufw --version` - check if UFW is installed.
 
+`sudo ufw status` - check the active rules of UFW.
 
+`sudo ufw allow 8080/tcp` - allow port 8080 to UFW.
 
+`sudo ufw delete allow 8080/tcp` - delete the 8080 rule of UFW.
 
+`dpkg -l | grep openssh-server` - check that SSH is installed.
 
+`sudo service ssh status` - check that SSH is active.
 
+`sudo service ssh status` - check that SSh uses port 4242.
 
+`sudo crontab -u root -e` - check the script timing with Cron.
 
-
-
-
-
-
-
-
-
-
+`sudo nano /etc/profile` - make sure `monitoring.sh` is running when the machine starts.
 
 
 
