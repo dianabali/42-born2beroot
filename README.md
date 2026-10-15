@@ -17,7 +17,63 @@ The finished virtual machine:
 - Has a user `<login>` belonging to the `user42` and `sudo` groups.
 
 ### Operating system choice
-**Debian** was chosen for this project because it is stable, well documented and easier to configure for a first system administration project. It is community-driven distribution with a very large package repository, and it ships AppArmor enabled by default.
+**Debian** was chosen for this project because it is stable, well documented and easier to configure for a first system administration project.
+
+| | Advantages | Disadvantages |
+|---|---|---|
+| **Debian** | Very stable, huge community and documentation, large package repository, AppArmor ready out of the box, beginner friendly | Older package versions, slower release cycle, fewer enterprise support options |
+| **Rocky Linux** | RHEL-compatible, enterprise oriented, long support lifecycle, SELinux by default | Steeper learning curve, SELinux configuration is more complex, smaller community for troubleshooting |
+
+## Main design choices
+### Partitioning
+- **/boot (sda1):** Kept outside the encrypted volume so the bootloader
+  can load the kernel before the disk is unlocked.
+- **Extended partition (sda2):** A 1K container that lets the disk hold
+  more than four partitions. The logical partition sda5 lives inside it.
+- **LUKS (sda5_crypt):** sda5 is encrypted with LUKS. The passphrase is
+  asked at boot, and everything below it is protected at rest.
+- **LVM:** The decrypted volume is a physical volume in the volume group
+  `dbali42-vg`, split into logical volumes. LVM allows resizing volumes
+  later without repartitioning.
+  - `root` (7.5G): the system and installed software
+  - `swap_1` (1G): swap space used when RAM is full
+  - `home` (10.5G): user data, separate so that reinstalling or
+    breaking the system doesn't affect personal files
+
+Use ```lsblk``` to show the partitions.
+
+### Security policies
+- **Password policy** (`etc/login.defs` and `libpam-pwquality`):
+	- Expires every 30 days, minimum 2 days between changes, warning 7 days before expiry.
+	- Minimum 10 characters, at least one uppercase letter, one lowercase letter, one digit.
+	- No more than 3 consecutive identical characters.
+	- Must not contain the username.
+	- Must differ from the previous password by at least 7 characters.
+	- Applies to root as well.
+
+- **sudo policy** (`etc/sudoers.d`):
+	- Maximum 3 attempts on wrong password.
+	- Custom error message on wrong password.
+	- All sudo input and output logged in `/var/log/sudo/`.
+	- TTY mode required.
+	- Restricted `secure_path`.
+
+- **SSH**: port4242, `PermitRootLogin no`.
+- **Firewall**: UFW enables, default deny incoming, only port 4242 allowed.
+- **Mandatory access control**: AppArmor enabled.
+
+### User management
+- Root account is not used for user management.
+- A regular user `<login>` is a member of `sudo` and `user42`.
+- Additional users and groups are created with `adduser` and `addgroup`.
+
+### Services installed
+- `openssh-server`
+- `ufw`
+- `sudo`
+- `libpam-pwquality`
+- `cron`
+- `apparmor`
 
 ## Instructions
 ### Prerequisities
@@ -128,6 +184,100 @@ The finished virtual machine:
 
 *Pick UTM:* Pick UTM if your main computer is a modern Apple Silicon Mac (M1, M2, M3, M4). UTM is built specifically for Apple's architecture and runs circles around VirtualBox on those machines.
 
+## Commands for Born2BeRoot:
+Here lies my iconic [`COMMANDS.md`](https://github.com/dianabali/42-born2beroot/blob/main/COMMANDS.md) with every command I used during this project.
+
+## Other useful commands:
+**simple stuff:**
+
+`sudo service ufw status` - check the status of UFW.
+
+`sudo service ssh status` - check the status of SSH.
+
+`uname -a` - check the OS.
+
+`sudo hostnamectl` - see hostname and info.
+
+**user stuff:**
+
+`sudo adduser <login>` - add a new user.
+
+`nano /etc/pam.d/common-passwd` - password policy.
+
+`sudo groupadd <groupname>` - add a new group.
+
+`cat /etc/group` - check all groups.
+
+`sudo adduser <login> <group>` - add a user to a group.
+
+`groups <login>` - check the groups of user.
+
+`nano /etc/pam.d/common-password` - check password rules.
+
+**hostname stuff:**
+
+`sudo hostnamectl` - check the hostname of the machine.
+
+`sudo hostnamectl set-hostname <user>` - change hostname.
+
+`lsblk` - view partitions.
+
+**sudo stuff:**
+
+`sudo --version` - check if sudo is installed.
+
+`ls -ld /var/log/sudo` - check that /var/log/sudo exists.
+
+`sudo ls -la /var/log/sudo` - check the contents of /var/log/sudo.
+
+`sudo journalctl -t sudo` - check sudo logs.
+
+**ufw stuff:**
+
+`sudo ufw --version` - check if UFW is installed.
+
+`sudo service ufw status` - check that UFW is working.
+
+`sudo ufw status` - check the active rules of UFW.
+
+`sudo ufw allow 8080/tcp` - allow port 8080 to UFW.
+
+`sudo ufw delete allow 8080/tcp` - delete the 8080 rule of UFW.
+
+**ssh stuff:**
+
+`sudo service ssh status` - check that SSH is active.
+
+`sudo service ssh status` - check that SSh uses port 4242.
+
+**script stuff:**
+
+`nano /etc/profile` - check the weird scary code.
+
+`sudo crontab -u root -e` - check the script timing with Cron.
+
+`sudo nano /etc/profile` - make sure `monitoring.sh` is running when the machine starts.
+
+`sudo nano /etc/profile` - comment out the path for the script to not run when the machine starts.
+
+**other stuff:**
+
+`nano /etc/login.defs` - password policies for days.
+
+`cat /etc/sudoers.d/sudo_config` - sudo policy.
+
+`cat /etc/group` - all groups.
+
+`cat /etc/passwd` - print users.
+
+`getent group developers` - check a group.
+
+`sudo gpasswd -d username developers` - remove a user from a group.
+
+`sudo groupdel developers` - delete a group.
+
+`dpkg -l | grep openssh-server` - check that SSH is installed.
+
 ## Resources
 1. [What is a Virtual Machine?](https://www.geeksforgeeks.org/operating-systems/virtual-machines-in-operating-system/)
 2. [What is UFW?](https://nhimg.org/glossary/ufw-firewall/)
@@ -142,66 +292,6 @@ AI tools were used as a learning and productivity aid:
 - for explaining concepts and tools.
 - for structuring this README.
 - for reviewing `monitoring.sh`.
-- for understanding errors.
+- for understanding errors and commands.
 
 AI output was verified against official documentation before being applied.
-
-
-## Commands for Born2BeRoot:
-[My iconic `COMMANDS.md` with every command I used during this project](https://github.com/dianabali/42-born2beroot/blob/main/COMMANDS.md)
-
-## Other useful commands:
-`sudo ufw status` - check the status of UFW.
-
-`sudo service ssh status` - check the status of SSH.
-
-`uname -a` - check the OS.
-
-`sudo hostnamectl` - see hostname and info.
-
-`groups` - check the groups of user.
-
-`cat /etc/group` - all groups.
-
-`cat /etc/passwd` - print users.
-
-`groups <user>` - check which groups a user belongs to.
-
-`nano /etc/login.defs` - password policies for days.
-
-`cat /etc/sudoers.d/sudo_config` - sudo policy.
-
-`nano /etc/pam.d/common-passwd` - password policy.
-
-`sudo hostnamectl set-hostname <user>` - change hostname.
-
-`sudo --version` - check if sudo is installed.
-
-`sudo adduser <login> <group>` - add a user to a group.
-
-`ls -ld /var/log/sudo` - check that /var/log/sudo exists.
-
-`sudo ls -la /var/log/sudo` - check the contents of /var/log/sudo.
-
-`sudo journalctl -t sudo` - check sudo logs.
-
-`sudo ufw --version` - check if UFW is installed.
-
-`sudo ufw status` - check the active rules of UFW.
-
-`sudo ufw allow 8080/tcp` - allow port 8080 to UFW.
-
-`sudo ufw delete allow 8080/tcp` - delete the 8080 rule of UFW.
-
-`dpkg -l | grep openssh-server` - check that SSH is installed.
-
-`sudo service ssh status` - check that SSH is active.
-
-`sudo service ssh status` - check that SSh uses port 4242.
-
-`sudo crontab -u root -e` - check the script timing with Cron.
-
-`sudo nano /etc/profile` - make sure `monitoring.sh` is running when the machine starts.
-
-
-
