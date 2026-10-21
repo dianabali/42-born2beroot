@@ -12,17 +12,12 @@ The finished virtual machine:
 - Runs `UFW`.
 - Exposes `SSH` only at port `4242`.
 - Enforces a strong password policy and a strict sudo policy.
-- Has a host name of the form `<login>42`.
+- Has a hostname of the form `<login>42`.
 - Runs a `monitoring.sh` script every 10 minutes.
 - Has a user `<login>` belonging to the `user42` and `sudo` groups.
 
 ### Operating system choice
 **Debian** was chosen for this project because it is stable, well documented and easier to configure for a first system administration project.
-
-| | Advantages | Disadvantages |
-|---|---|---|
-| **Debian** | Very stable, huge community and documentation, large package repository, AppArmor ready out of the box, beginner friendly | Older package versions, slower release cycle, fewer enterprise support options |
-| **Rocky Linux** | RHEL-compatible, enterprise oriented, long support lifecycle, SELinux by default | Steeper learning curve, SELinux configuration is more complex, smaller community for troubleshooting |
 
 ## Main design choices
 ### Partitioning
@@ -108,81 +103,24 @@ Use ```lsblk``` to show the partitions.
 
 ## Comparisons
 ### 1. Debian vs. Rocky
-**Debian** is a general-purpose Linux distribution for flexibility, simplicity, and a large software ecosystem.
+**Debian** is a free general-purpose operating system. It is the second oldest Linux distribution. It is used for servers, personal computers, and embedded devices. It is operated bt Software in the Public Interest. Handles security through public disclosure.
 
-**Rocky Linux** is the better fit for RHEL-compatible enterprise servers, especially when you need to mirror a Red Hat–style production environment.
-
-| Criteria | Debian | Rocky Linux |
-|---|---|---|
-| Based on | Independent community distribution | RHEL-compatible distribution |
-| Package format | `.deb` | `.rpm` |
-| Package manager | `apt` / `dpkg` | `dnf` / `rpm` |
-| Default security framework | AppArmor | SELinux |
-| Default firewall tool | None enforced (UFW or nftables commonly used) | firewalld |
-| Server use | Excellent | Excellent |
-| Desktop use | Excellent | Possible, but more server-oriented |
-| Release model | Stable releases (every 2 years) | Follows RHEL major releases |
-| Target use | General purpose, servers, desktops | Enterprise servers |
-| Learning curve | Gentler | More complex |
-
-*Pick Debian:* If you're building a VPS, home server, web server, self-hosted services, development environment, or general Linux infrastructure without a specific enterprise compatibility requirement.
-
-*Pick Rocky Linux:* If you're deploying enterprise applications, following RHEL-based standards, migrating from CentOS, or need a long-lived environment aligned with the enterprise Linux ecosystem.
+**Rocky Linux** is a free, open-source Linux distribution. Intended to be a complete release using the Red HAt Enterprise Linux (RHEL) OS source code. Aimed to provide a community-supported OS. 
 
 ### 2. AppArmor vs. SELinux
-**AppArmor** is a Linux kernel security module that provides Mandatory Access Control (MAC). It lets system administrators restrict what individual programs can do by applying custom security profiles to them.
+**AppArmor** is a Linux kernel security module that allows system administrators to restrict programs' capabilities with profiles. Supplements the traditional Unix discretionary access control (DAC) model by providing mandatory access control (MAC). Offered as an alternative to SELinux.
 
-**SELinux** (Security-Enhanced Linux) is a security architecture built into the Linux kernel that implements Mandatory Access Control (MAC).
-
-| Criteria | AppArmor | SELinux |
-|---|---|---|
-| Model | Path-based profiles | Label-based (security contexts on every file and process) |
-| Complexity | Simple, easier to read and write profiles | Very powerful but complex |
-| Granularity | Per-application confinement | Very fine-grained, system-wide policy |
-| Default on | Debian, Ubuntu, SUSE | RHEL, Rocky, Fedora, CentOS |
-| Strengths | Quick to deploy, low maintenance | Stronger isolation, suited to high-security environments |
-| Weaknesses | Less granular, depends on file paths | Hard to debug, steep learning curve |
-
-*Pick AppArmor:* You are using Ubuntu or Debian. AppArmor is built-in and enabled by default on these systems. Stick with it unless you have a strict requirement for label-based security.
-
-*Pick SELinux:* You are using RHEL-family distributions. SELinux is natively integrated into Red Hat, Fedora, Rocky Linux, and AlmaLinux. Turning it off can break system components that rely on its security labels.
+**SELinux** (Security-Enhanced Linux) is a Linux kernel security module that provides a mechanism for supporting access control, security policies, and MAC.
 
 ### 3. UFW vs. firewalld
-**UFW** (Uncomplicated Firewall) is a user-friendly frontend tool for managing netfilter / iptables firewall rules in Linux.
+**UFW** (Uncomplicated Firewall) is a program for managing netfilter firewall. Easy to use. Uses a command line interface and iptables for configuration. Available by default in all Ubuntu and Debian installations.
 
-**firewalld** is a dynamic firewall management tool designed for Linux operating systems. Like UFW, it acts as a frontend to manage the underlying kernel packet filtering frameworks (nftables or iptables).
-
-| Criteria | UFW | firewalld |
-|---|---|---|
-| Full name | Uncomplicated Firewall | Dynamic firewall daemon |
-| Backend | iptables / nftables | nftables (iptables legacy) |
-| Concept | Simple rules (`allow`, `deny`) | Zones and services |
-| Runtime changes | Reloads rules | Applies changes dynamically without dropping connections |
-| Typical on | Debian, Ubuntu | RHEL, Rocky, Fedora |
-| Best for | Simple setups and quick configuration | Complex environments with multiple network zones |
-
-*Pick UFW:* If you are running Ubuntu or Debian: It is already installed, integrated into the system, and requires zero extra setup and want absolute simplicity.
-
-*Pick firewalld:* You are running a RHEL-family OS. It is the native firewall daemon for Red Hat, Rocky, and Fedora. Or you have multiple network interfaces
+**firewalld** is a firewall management tool designed for Linux operating systems. Like UFW, it acts as a frontend for the Linux kernel's netfilter framework. Its current default backend is nftables. Is an alternative to nft and iptables command line programs.
 
 ### 4. VirtualBox vs. UTM
-**VirtualBox** is a free, open-source hypervisor used to create and run virtual machines (VMs). It acts as a software emulator, allowing you to run multiple guest operating systems (like Linux, Windows, or macOS) simultaneously on a single physical computer (the host OS) without repartitioning your hard drive.
+**VirtualBox** is a free, open-source program used to create and run virtual machines (VMs). It extends the capabilities of your computer so that it can run multiple OSs inside multiple VMs at the same time.
 
-**UTM** is a popular, open-source virtualization and emulation software designed specifically for macOS.
-
-| Criteria | VirtualBox | UTM |
-|---|---|---|
-| Type | Hypervisor (Type 2) | Frontend for QEMU / Apple Virtualization |
-| Platforms | Windows, Linux, macOS (Intel) | macOS (Intel and Apple Silicon), iOS |
-| Apple Silicon (ARM) | Limited support | Native support |
-| Architecture emulation | x86 virtualization only | Virtualization and full emulation (x86 on ARM) |
-| Performance | Good on x86 hosts | Near native when virtualizing, slower when emulating |
-| License | Free (GPLv3 / extension pack) | Free (Apache 2.0), paid on the App Store |
-| Interface | Mature and feature-rich | Simple and macOS-native |
-
-*Pick VirtualBox:* If your main computer runs Windows or Linux, or if you have an older Intel-based Mac. It does not work reliably on newer Apple computers.
-
-*Pick UTM:* Pick UTM if your main computer is a modern Apple Silicon Mac (M1, M2, M3, M4). UTM is built specifically for Apple's architecture and runs circles around VirtualBox on those machines.
+**UTM** is an open-source virtual machine application for macOS. Functions as a virtualizer (multiple OSs if the CPU architecture is the same) and emulator (simulating different hardware).
 
 ## Commands for Born2BeRoot:
 Here lies my iconic [`COMMANDS.md`](https://github.com/dianabali/42-born2beroot/blob/main/COMMANDS.md) with every command I used during this project.
@@ -280,12 +218,16 @@ Here lies my iconic [`COMMANDS.md`](https://github.com/dianabali/42-born2beroot/
 
 ## Resources
 1. [What is a Virtual Machine?](https://www.geeksforgeeks.org/operating-systems/virtual-machines-in-operating-system/)
-2. [What is UFW?](https://nhimg.org/glossary/ufw-firewall/)
-3. [Debian vs. Rocky](https://amadla.medium.com/debian-linux-vs-rocky-os-exploring-the-best-choice-for-your-server-dfd6b3d80c1a)
-4. [Debian](https://www.debian.org/doc/)
-5. [Oracle VirtualBox manual](https://www.virtualbox.org/manual/)
-6. [OpenSSH manual](https://man.openbsd.org/sshd_config)
-7. [Born2BeRoot guide](https://noreply.gitbook.io/born2beroot)
+3. [Debian](https://en.wikipedia.org/wiki/Debian)
+4. [Rocky Linux](https://en.wikipedia.org/wiki/Rocky_Linux)
+5. [AppArmor](https://en.wikipedia.org/wiki/AppArmor)
+6. [SELinux](https://en.wikipedia.org/wiki/SELinux)
+7. [UFW](https://en.wikipedia.org/wiki/Uncomplicated_Firewall)
+8. [Firewalld](https://en.wikipedia.org/wiki/Firewalld)
+9. [Oracle VirtualBox manual](https://www.virtualbox.org/manual/)
+10. [UTM](https://en.wikipedia.org/wiki/UTM_(software))
+11. [OpenSSH manual](https://man.openbsd.org/sshd_config)
+12. [Born2BeRoot guide](https://noreply.gitbook.io/born2beroot)
 
 ### Use of AI
 AI tools were used as a learning and productivity aid:
