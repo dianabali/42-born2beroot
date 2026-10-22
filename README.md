@@ -188,6 +188,8 @@ Here lies my iconic [`COMMANDS.md`](https://github.com/dianabali/42-born2beroot/
 
 `sudo service ssh status` - check that SSh uses port 4242.
 
+`ssh <login>@localhost -p 4241` - connect to SSH.
+
 **script stuff:**
 
 `nano /etc/profile` - check the weird scary code.
